@@ -3,14 +3,16 @@
 
 #include <glm/glm.hpp>
 
+using namespace glm;
+
 namespace graphics
 {
 
     struct Material
     {
-        glm::vec4 diffuse_color;
-        glm::vec4 specular_color;
-        glm::vec4 emission_color;
+        vec4 diffuse_color;
+        vec4 specular_color;
+        vec4 emission_color;
         float shininess;
     };
 

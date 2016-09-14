@@ -23,12 +23,13 @@ namespace graphics
         Light lights[scene.num_lights];
         for (uint n=0; n<scene.num_lights; ++n) {
             lights[n] = scene.lights[n];
-            lights[n].position = glm::inverse (camera->view) * lights[n].position;
+            lights[n].position = camera->view * lights[n].position;
         }
 
         for (uint i=0; i<scene.models.size (); ++i) {
 
             Model* model = scene.models[i];
+            //std::cout << model->GetType () << "\n";
 
             glm::mat4 modelview = camera->view * model->transform.model ();
             glm::mat4 modelviewinvtrans = modelview;

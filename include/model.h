@@ -21,11 +21,11 @@ namespace graphics
         Shader* p_shader;
 
         /* RTTI */
-        const char* GetType () { return "Model"; }
-        const char* GetParentType (const ushort& i) { return nullptr; }
-        ushort GetParentCount () { return 0; }
-        size_t GetTypeID () { static size_t id = util::str_hashfn ("Model"); return id; }
-        size_t GetParentTypeID (const ushort& i) { return 0; }
+        virtual const char* GetType () = 0;
+        virtual const char* GetParentType (const ushort& i) = 0;
+        virtual ushort GetParentCount () = 0;
+        virtual size_t GetTypeID () = 0;
+        virtual size_t GetParentTypeID (const ushort& i) = 0;
     };
 
 }

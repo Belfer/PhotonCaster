@@ -44,16 +44,19 @@ namespace graphics
         if (VAOsize > 0) {
             glDeleteVertexArrays (VAOsize, VAOs);
             delete [] VAOs;
+            VAOs = nullptr;
             VAOsize = 0;
         }
         if (VBOsize > 0) {
             glDeleteBuffers (VBOsize, VBOs);
             delete [] VBOs;
+            VBOs = nullptr;
             VBOsize = 0;
         }
         if (EBOsize > 0) {
             glDeleteBuffers (EBOsize, EBOs);
             delete [] EBOs;
+            EBOs = nullptr;
             EBOsize = 0;
         }
     }

@@ -3,6 +3,8 @@
 
 #include <glm/glm.hpp>
 
+using namespace glm;
+
 namespace graphics
 {
 
@@ -13,8 +15,8 @@ namespace graphics
 
     struct Light
     {
-        glm::vec4 position;
-        glm::vec4 color;
+        vec4 position;
+        vec4 color;
         LightType type;
     };
 

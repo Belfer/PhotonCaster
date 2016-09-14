@@ -4,17 +4,19 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+using namespace glm;
+
 namespace graphics
 {
 
     struct Camera
     {
-        glm::vec3 position;
-        glm::quat orientation;
-        glm::mat4 projection;
-        glm::mat4 view;
+        vec3 position;
+        quat orientation;
+        mat4 projection;
+        mat4 view;
 
-        inline glm::mat4 combined () const { return projection * view; }
+        inline mat4 combined () const { return projection * view; }
     };
 
 }

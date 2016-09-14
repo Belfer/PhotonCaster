@@ -5,25 +5,27 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+using namespace glm;
+
 namespace graphics
 {
 
     struct Transform
     {
         Transform ()
-            : position (glm::vec3 (0,0,0)),
-              rotation (glm::quat ()),
-              scale (glm::vec3(1,1,1)) {}
+            : position (vec3 (0,0,0)),
+              rotation (quat ()),
+              scale (vec3(1,1,1)) {}
 
-        glm::vec3 position;
-        glm::quat rotation;
-        glm::vec3 scale;
+        vec3 position;
+        quat rotation;
+        vec3 scale;
 
-        inline glm::mat4 model () const
+        inline mat4 model () const
         {
-            glm::mat4 trans_mat = glm::translate (glm::mat4(1.f), position);
-            glm::mat4 rot_mat = glm::toMat4 (rotation);
-            glm::mat4 scale_mat = glm::scale (glm::mat4(1.f), scale);
+            mat4 trans_mat = glm::translate (mat4(1.f), position);
+            mat4 rot_mat = glm::toMat4 (rotation);
+            mat4 scale_mat = glm::scale (mat4(1.f), scale);
 
             return trans_mat * rot_mat * scale_mat;
         }

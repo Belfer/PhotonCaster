@@ -1,4 +1,6 @@
 #include <iostream>
+#include <algorithm>
+#include <string>
 #include "window.h"
 #include "raycast_renderer.h"
 #include "raster_renderer.h"
@@ -14,6 +16,8 @@
 #define WIN_WIDTH  800
 #define WIN_HEIGHT 600
 
+using namespace std;
+using namespace glm;
 using namespace graphics;
 
 Window* p_window;
@@ -25,13 +29,10 @@ Camera camera;
 Scene scene;
 
 Shader* shader;
-Mesh* mesh;
-Triangle* tri;
-Sphere* sphere;
 
-static const glm::vec3 UP = glm::vec3 (0,1,0);
-static const glm::vec3 FORWARD = glm::vec3 (0,0,1);
-static const glm::vec3 RIGHT = glm::vec3 (1,0,0);
+static const vec3 UP = vec3 (0,1,0);
+static const vec3 FORWARD = vec3 (0,0,1);
+static const vec3 RIGHT = vec3 (1,0,0);
 
 bool init ()
 {
@@ -39,64 +40,55 @@ bool init ()
     if (!p_window->Create ("PhotonCaster", WIN_WIDTH, WIN_HEIGHT))
         return false;
 
+    string glslVersion = string ((char*)glGetString (GL_SHADING_LANGUAGE_VERSION));
+    glslVersion.erase (std::find (glslVersion.begin(), glslVersion.end (), '.'));
+    if (glslVersion != "120" && glslVersion != "130") {
+        glslVersion = "120";
+    }
+
+    std::cout << "GLSL version: " << glslVersion << "\n";
+
     p_raycastRenderer = new RaycastRenderer ();
     p_rasterRenderer = new RasterRenderer ();
 
     //p_renderer = p_rasterRenderer;
     p_renderer = p_raycastRenderer;
 
-    camera.position = glm::vec3 (0, 0,-1);
-    camera.orientation = glm::quat ();
+    //camera.position = -FORWARD * 2.f;
+    camera.orientation = quat ();
     camera.projection = glm::perspective (70.f, (float) WIN_WIDTH/WIN_HEIGHT, 0.1f, 1000.f);
     camera.view = glm::lookAt (camera.position, camera.position + camera.orientation * FORWARD, UP);
 
-    scene.ambient_color = glm::vec4 (0.1f, 0.1f, 0.1f, 1.f);
+    scene.ambient_color = vec4 (0.1f, 0.1f, 0.1f, 1.f);
     scene.p_active_camera = &camera;
 
-    scene.lights[scene.num_lights].color = glm::vec4 (0.9f, 0.9f, 0.9f, 1.f);
-    scene.lights[scene.num_lights].position = glm::vec4 (9.f, 0.f, 1.f, 0.f);
-    scene.lights[scene.num_lights].type = LightType::DIRECTIONAL;
+    scene.lights[0].color = vec4 (0.9f, 0.9f, 0.9f, 1.f);
+    scene.lights[0].position = vec4 (0.f, 0.f, 1.f, 0.f);
+    scene.lights[0].type = LightType::DIRECTIONAL;
     scene.num_lights++;
 
-    GLfloat vertices[] = {
-       -0.5f,-0.5f, 0.0f,
-        0.5f,-0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f
-    };
-
-    GLfloat normals[] = {
-        0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f,
-        0.0f, 0.0f, 1.0f
-    };
-
     shader = new Shader ();
-    shader->AddShader (GL_VERTEX_SHADER, LoadFile ("../shaders/light.vert.glsl"));
-    shader->AddShader (GL_FRAGMENT_SHADER, LoadFile ("../shaders/light.frag.glsl"));
+    shader->AddShader (GL_VERTEX_SHADER, util::load_file ("../shaders/light.vert"+glslVersion+".glsl"));
+    shader->AddShader (GL_FRAGMENT_SHADER, util::load_file ("../shaders/light.frag"+glslVersion+".glsl"));
     shader->Compile ();
 
-    tri = new Triangle ();
-    tri->p1 = glm::vec3 (vertices[0], vertices[1], vertices[2]);
-    tri->p2 = glm::vec3 (vertices[3], vertices[4], vertices[5]);
-    tri->p3 = glm::vec3 (vertices[6], vertices[7], vertices[8]);
+    for (uint i=0; i<8; ++i) {
+        Triangle* tri = new Triangle ();
+        tri->p1 = vec3 (-1,-1, 0);
+        tri->p2 = vec3 ( 1,-1, 0);
+        tri->p3 = vec3 ( 0, 1, 0);
+        tri->transform.rotation = glm::angleAxis (i*45.f, UP);
+        tri->transform.position = tri->transform.rotation * FORWARD * 2.f;
 
-    tri->gldata.GenBuffers (1, 1, 0);
-    tri->gldata.BindVertexArray (0);
-    tri->gldata.AddArrayBuffer (0, sizeof (vertices), vertices, GL_STATIC_DRAW, GL_FLOAT, 3);
-    tri->gldata.AddArrayBuffer (1, sizeof (normals), normals, GL_STATIC_DRAW, GL_FLOAT, 3);
-    //tri->gldata.AddElementBuffer (0, 6, indices, GL_STATIC_DRAW);
-    tri->gldata.UnbindVertexArray ();
-    tri->gldata.SetDrawCount (3);
-    tri->gldata.SetUseIndices (false);
+        util::gl_triangle (tri->gldata, tri->p1, tri->p2, tri->p3);
+        tri->p_shader = shader;
+        tri->material.diffuse_color = vec4 (0.7f, 0.7f, 0.7f, 1.f);
+        tri->material.specular_color = vec4 (1.f, 1.f, 1.f, 1.f);
+        tri->material.emission_color = vec4 (0.f, 0.f, 0.f, 1.f);
+        tri->material.shininess = 10000.f;
 
-    tri->p_shader = shader;
-
-    tri->material.diffuse_color = glm::vec4 (0.7f, 0.7f, 0.7f, 1.f);
-    tri->material.specular_color = glm::vec4 (1.f, 1.f, 1.f, 1.f);
-    tri->material.emission_color = glm::vec4 (0.f, 0.f, 0.f, 1.f);
-    tri->material.shininess = 10000.f;
-
-    scene.models.emplace_back (tri);
+        scene.models.emplace_back (tri);
+    }
 
     return true;
 }
@@ -105,8 +97,9 @@ void render ()
 {
     SDL_Event e;
 
-    glm::vec2 move;
+    vec2 move;
     float xangle = 0, yangle = 0;
+    float counter = 0;
 
     bool isRunning = true;
     while (isRunning) {
@@ -147,8 +140,8 @@ void render ()
                 yangle = yangle > 89 ? 89 : yangle;
                 yangle = yangle <-89 ?-89 : yangle;
 
-                glm::quat xrot = glm::angleAxis (yangle, RIGHT);
-                glm::quat yrot = glm::angleAxis (xangle, UP);
+                quat xrot = glm::angleAxis (yangle, RIGHT);
+                quat yrot = glm::angleAxis (xangle, UP);
                 camera.orientation = yrot * xrot;
             }
         }
@@ -158,6 +151,10 @@ void render ()
             camera.position += camera.orientation * RIGHT * move.y * 0.1f;
         }
 
+        counter += 0.16f;
+        vec3 tmp = glm::angleAxis (counter, UP) * FORWARD;
+        scene.lights[0].position = vec4 (tmp.x, tmp.y, tmp.z, 0.f);
+
         camera.projection = glm::perspective (70.f, (float) WIN_WIDTH/WIN_HEIGHT, 0.1f, 1000.f);
         camera.view = glm::lookAt (camera.position, camera.position + camera.orientation * FORWARD, UP);
 
@@ -165,7 +162,7 @@ void render ()
         p_window->Clear ();
 
         //p_renderer->render (scene);
-        p_raycastRenderer->render (scene);
+        //p_raycastRenderer->render (scene);
         p_rasterRenderer->render (scene);
 
         p_window->SwapBuffers ();
@@ -179,10 +176,12 @@ void shutdown ()
     delete p_window;
     delete p_raycastRenderer;
     delete p_rasterRenderer;
+    delete shader;
 
     p_window = nullptr;
     p_raycastRenderer = nullptr;
     p_rasterRenderer = nullptr;
+    shader = nullptr;
 }
 
 int main (int argc, char ** args)

@@ -1,12 +1,12 @@
 # version 130
 
-attribute vec3 position;
+attribute vec3 _vertex;
 
 uniform mat4 ProjectionMatrix;
 uniform mat4 ModelViewMatrix;
 
 void main (void)
 {
-    gl_Position = ProjectionMatrix * ModelViewMatrix * vec4 (position, 1);
+    gl_Position = ProjectionMatrix * ModelViewMatrix * vec4 (_vertex, 1);
 }
 
