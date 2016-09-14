@@ -164,7 +164,9 @@ void render ()
         p_window->SetClearColor (0x00, 0x00, 0x00);
         p_window->Clear ();
 
-        p_renderer->render (scene);
+        //p_renderer->render (scene);
+        p_raycastRenderer->render (scene);
+        p_rasterRenderer->render (scene);
 
         p_window->SwapBuffers ();
     }

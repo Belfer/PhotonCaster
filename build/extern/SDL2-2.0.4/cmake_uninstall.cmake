@@ -1,8 +1,8 @@
-if (NOT EXISTS "/home/conor/Documents/Projects/UC San DiegoX: CSE167x Computer Graphics/hw3-linuxosx/build/extern/SDL2-2.0.4/install_manifest.txt")
-    message(FATAL_ERROR "Cannot find install manifest: \"/home/conor/Documents/Projects/UC San DiegoX: CSE167x Computer Graphics/hw3-linuxosx/build/extern/SDL2-2.0.4/install_manifest.txt\"")
-endif(NOT EXISTS "/home/conor/Documents/Projects/UC San DiegoX: CSE167x Computer Graphics/hw3-linuxosx/build/extern/SDL2-2.0.4/install_manifest.txt")
+if (NOT EXISTS "/home/conor/Documents/Git/PhotonCaster/build/extern/SDL2-2.0.4/install_manifest.txt")
+    message(FATAL_ERROR "Cannot find install manifest: \"/home/conor/Documents/Git/PhotonCaster/build/extern/SDL2-2.0.4/install_manifest.txt\"")
+endif(NOT EXISTS "/home/conor/Documents/Git/PhotonCaster/build/extern/SDL2-2.0.4/install_manifest.txt")
 
-file(READ "/home/conor/Documents/Projects/UC San DiegoX: CSE167x Computer Graphics/hw3-linuxosx/build/extern/SDL2-2.0.4/install_manifest.txt" files)
+file(READ "/home/conor/Documents/Git/PhotonCaster/build/extern/SDL2-2.0.4/install_manifest.txt" files)
 string(REGEX REPLACE "\n" ";" files "${files}")
 foreach (file ${files})
     message(STATUS "Uninstalling \"$ENV{DESTDIR}${file}\"")

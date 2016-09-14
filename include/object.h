@@ -6,7 +6,7 @@
 namespace rtti
 {
 
-    class Object
+    struct Object
     {
         virtual const char* GetType () = 0;
         virtual const char* GetParentType (const ushort& i) = 0;
