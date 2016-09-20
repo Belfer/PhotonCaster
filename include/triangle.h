@@ -21,6 +21,12 @@ namespace graphics
         vec3 p2;
         vec3 p3;
 
+        virtual bool Intersect (Intersection& inter, const Ray& ray)
+        {
+            // TODO
+            return false;
+        }
+
         /* RTTI */
         const char* GetType () { return "Triangle"; }
         const char* GetParentType (const ushort& i) { return nullptr; }

@@ -29,10 +29,10 @@ vec4 ComputeLight (const in vec3 direction, const in vec4 lightcolor, const in v
     float nDotL = dot (normal, direction);
     vec4 lambert = diffuse_color * lightcolor * max (nDotL, 0.0);
 
-    //float nDotH = dot (normal, halfvec);
-    //vec4 phong = specular_color * lightcolor * pow (max (nDotH, 0.0), shininess);
+    float nDotH = dot (normal, halfvec);
+    vec4 phong = specular_color * lightcolor * pow (max (nDotH, 0.0), shininess);
 
-    vec4 retval = lambert;// + phong;
+    vec4 retval = lambert + phong;
     return retval;
 }
 

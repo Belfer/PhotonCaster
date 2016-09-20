@@ -14,8 +14,12 @@ namespace graphics
     class Shader
     {
     public:
-        Shader ();
-        virtual ~Shader ();
+        Shader () : program (0) {}
+        virtual ~Shader () { DeleteProgram (); }
+
+        void CreateProgram ();
+
+        void DeleteProgram ();
 
         void AddShader (GLuint type, const std::string& source);
 

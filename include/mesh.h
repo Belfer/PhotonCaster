@@ -15,6 +15,12 @@ namespace graphics
     {
         PolygonMeshData polydata;
 
+        virtual bool Intersect (Intersection& inter, const Ray& ray)
+        {
+            // TODO
+            return false;
+        }
+
         /* RTTI */
         const char* GetType () { return "Mesh"; }
         const char* GetParentType (const ushort& i) { return nullptr; }

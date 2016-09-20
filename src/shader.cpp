@@ -5,14 +5,18 @@ namespace graphics
 
     static void CheckShaderError (GLuint shader, GLuint flag, bool program, const std::string& msg);
 
-    Shader::Shader ()
+    void Shader::CreateProgram ()
     {
+        DeleteProgram ();
         program = glCreateProgram ();
     }
 
-    Shader::~Shader ()
+    void Shader::DeleteProgram ()
     {
-        glDeleteProgram (program);
+        if (program != 0) {
+            glDeleteProgram (program);
+            program = 0;
+        }
     }
 
     void Shader::AddShader (GLuint type, const std::string& source)
@@ -62,6 +66,7 @@ namespace graphics
         for (auto it = shaders.begin (); it != shaders.end (); it++) {
             glDeleteShader ((*it));
         }
+        shaders.clear ();
     }
 
     static void CheckShaderError (GLuint shader, GLuint flag, bool program, const std::string& msg)

@@ -6,6 +6,7 @@
 #include "material.h"
 #include "mesh_data.h"
 #include "shader.h"
+#include "ray.h"
 #include "util.h"
 
 using namespace rtti;
@@ -19,6 +20,8 @@ namespace graphics
         Material material;
         OpenGLMeshData gldata;
         Shader* p_shader;
+
+        virtual bool Intersect (Intersection& inter, const Ray& ray) = 0;
 
         /* RTTI */
         virtual const char* GetType () = 0;

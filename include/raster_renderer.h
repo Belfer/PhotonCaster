@@ -12,6 +12,9 @@ namespace graphics
     class RasterRenderer : public Renderer
     {
     public:
+        RasterRenderer (Window* const window) : Renderer (window) {}
+        virtual ~RasterRenderer () {}
+
         void render (const Scene& scene);
     };
 

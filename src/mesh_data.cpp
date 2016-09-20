@@ -61,20 +61,20 @@ namespace graphics
         }
     }
 
-    void OpenGLMeshData::AddArraySubData (uint loc, uint size, GLfloat* data)
+    void OpenGLMeshData::ArraySubData (uint loc, uint size, GLfloat* data)
     {
         glBindBuffer (GL_ARRAY_BUFFER, VBOs[loc]);
         glBufferSubData (GL_ARRAY_BUFFER, 0, size * sizeof (data[0]), data);
         glBindBuffer (GL_ARRAY_BUFFER, 0);
     }
 
-    void OpenGLMeshData::AddElementSubData (uint loc, uint size, GLuint* data)
+    void OpenGLMeshData::ElementSubData (uint loc, uint size, GLuint* data)
     {
         glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, EBOs[loc]);
         glBufferSubData (GL_ELEMENT_ARRAY_BUFFER, 0, size * sizeof (data[0]), data);
     }
 
-    void OpenGLMeshData::AddArrayBuffer (uint loc, uint size, GLfloat* data, GLuint flag, GLuint type, uint count)
+    void OpenGLMeshData::ArrayBuffer (uint loc, uint size, GLfloat* data, GLuint flag, GLuint type, uint count)
     {
         // Put array data in GPU memory
         glBindBuffer (GL_ARRAY_BUFFER, VBOs[loc]);
@@ -86,16 +86,28 @@ namespace graphics
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    void OpenGLMeshData::AddElementBuffer (uint loc, uint size, GLuint* data, GLuint flag)
+    void OpenGLMeshData::ArrayBuffer (uint loc, uint size, GLfloat* data, GLuint flag, GLuint type, uint count, const GLvoid* offset)
+    {
+        // Put array data in GPU memory
+        glBindBuffer (GL_ARRAY_BUFFER, VBOs[loc]);
+        glBufferData (GL_ARRAY_BUFFER, size, data, flag);
+
+        glEnableVertexAttribArray (loc);
+        glVertexAttribPointer (loc, count, type, GL_FALSE, count * sizeof (GLfloat), offset);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
+
+    void OpenGLMeshData::ElementBuffer (uint loc, uint size, GLuint* data, GLuint flag)
     {
         // Put element data in GPU memory
         glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, EBOs[loc]);
         glBufferData (GL_ELEMENT_ARRAY_BUFFER, size, data, flag);
     }
 
-    void OpenGLMeshData::Draw (GLuint flag)
+    void OpenGLMeshData::Draw ()
     {
-        OpenGLMeshData::Draw (flag, drawCount, useIndices);
+        OpenGLMeshData::Draw (drawMode, drawCount, useIndices);
     }
 
     void OpenGLMeshData::Draw (GLuint flag, GLuint drawCount, bool useIndices)

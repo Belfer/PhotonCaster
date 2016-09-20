@@ -18,12 +18,12 @@ namespace graphics
     void RasterRenderer::render (const Scene& scene)
     {
         Camera* camera = scene.p_active_camera;
-        glm::mat4 projection = camera->projection;
+        glm::mat4 projection = camera->projection ();
 
         Light lights[scene.num_lights];
         for (uint n=0; n<scene.num_lights; ++n) {
             lights[n] = scene.lights[n];
-            lights[n].position = camera->view * lights[n].position;
+            lights[n].position = camera->view () * lights[n].position;
         }
 
         for (uint i=0; i<scene.models.size (); ++i) {
@@ -31,7 +31,7 @@ namespace graphics
             Model* model = scene.models[i];
             //std::cout << model->GetType () << "\n";
 
-            glm::mat4 modelview = camera->view * model->transform.model ();
+            glm::mat4 modelview = camera->view () * model->transform.model ();
             glm::mat4 modelviewinvtrans = modelview;
             ToInverseTranspose (modelviewinvtrans);
 
@@ -69,7 +69,7 @@ namespace graphics
                 glUniform4fv (u_lights_col, 1, glm::value_ptr (lights[n].color));
             }
 
-            model->gldata.Draw (GL_TRIANGLES);
+            model->gldata.Draw ();
         }
     }
 

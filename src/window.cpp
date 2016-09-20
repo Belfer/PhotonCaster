@@ -1,6 +1,6 @@
 #include "window.h"
 
-Window::Window ()
+void Window::Setup ()
 {
     SDL_Init (SDL_INIT_EVERYTHING);
 
@@ -55,9 +55,12 @@ bool Window::Create (const char* title, int width, int height)
     glEnable (GL_DEPTH_CLAMP);
     glEnable (GL_MULTISAMPLE);
 
-    //glEnable (GL_CULL_FACE);
-    //glCullFace (GL_BACK);
-    //glFrontFace (GL_CCW);
+    glEnable (GL_CULL_FACE);
+    glCullFace (GL_BACK);
+    glFrontFace (GL_CCW);
+
+    this->width = width;
+    this->height = height;
 
     return true;
 }

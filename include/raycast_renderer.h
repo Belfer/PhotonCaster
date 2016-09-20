@@ -1,33 +1,45 @@
 #ifndef RAYCASTRENDERER_H
 #define RAYCASTRENDERER_H
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "renderer.h"
 #include "camera.h"
+#include "texture.h"
+#include "mesh_data.h"
+#include "ray.h"
+
+using namespace glm;
 
 namespace graphics
 {
 
-    struct Ray
-    {
-    };
-
-    struct Intersection
-    {
-    };
-
     class RaycastRenderer : public Renderer
     {
     public:
-        void render (const Scene& scene);
+        RaycastRenderer (Window* const window) : Renderer (window)
+        {
+            Setup ();
+        }
+        virtual ~RaycastRenderer () {}
 
     private:
-        void RayTrace (const Scene& scene, const uint& width, const uint& height, int* buffer);
+        void Setup ();
 
-        Ray RayThruPixel (const Camera& camera, const uint& x, const uint& y);
+    public:
+        void render (const Scene& scene);
 
-        Intersection Intersect (const Ray& ray, const Scene& scene);
+        void RayTrace (const Scene& scene, const uint& width, const uint& height, uint* buffer);
 
-        int FindColor (const Intersection& intersection);
+        void RayThruPixel (Ray& ray, const Camera& camera, const uint& x, const uint& y);
+
+        bool Intersect (Intersection& inter, const Ray& ray, const Scene& scene);
+
+        uint FindColor (const Intersection& inter, const Scene& scene);
+
+        Shader shader;
+        Texture texture;
+        OpenGLMeshData screen;
     };
 
 }

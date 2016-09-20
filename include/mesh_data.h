@@ -32,24 +32,29 @@ namespace graphics
     class OpenGLMeshData
     {
     public:
-        OpenGLMeshData () : VAOsize (0), VBOsize (0), EBOsize (0) {}
+        OpenGLMeshData () : VAOsize (0), VBOsize (0), EBOsize (0),
+            drawMode (GL_TRIANGLES), drawCount (0), useIndices (false) {}
         virtual ~OpenGLMeshData () { DeleteBuffers (); }
 
         void GenBuffers (uint VAOsize, uint VBOsize, uint EBOsize);
 
         void DeleteBuffers ();
 
-        void AddArraySubData (uint loc, uint size, GLfloat* data);
+        void ArraySubData (uint loc, uint size, GLfloat* data);
 
-        void AddElementSubData (uint loc, uint size, GLuint* data);
+        void ElementSubData (uint loc, uint size, GLuint* data);
 
-        void AddArrayBuffer (uint loc, uint size, GLfloat* data, GLuint flag, GLuint type, uint count);
+        void ArrayBuffer (uint loc, uint size, GLfloat* data, GLuint flag, GLuint type, uint count);
 
-        void AddElementBuffer (uint loc, uint size, GLuint* data, GLuint flag);
+        void ArrayBuffer (uint loc, uint size, GLfloat* data, GLuint flag, GLuint type, uint count, const GLvoid* offset);
 
-        void Draw (GLuint flag);
+        void ElementBuffer (uint loc, uint size, GLuint* data, GLuint flag);
+
+        void Draw ();
 
         void Draw (GLuint flag, GLuint drawCount, bool useIndices);
+
+        inline void SetDrawMode (GLuint drawMode) { this->drawMode = drawMode; }
 
         inline void SetDrawCount (GLuint drawCount) { this->drawCount = drawCount; }
 
@@ -73,6 +78,7 @@ namespace graphics
         uint VBOsize;
         uint EBOsize;
 
+        GLuint drawMode;
         GLuint drawCount;
         bool useIndices;
     };
