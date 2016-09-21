@@ -61,7 +61,7 @@ bool init ()
     camera.Perspective (70.f, (float) WIN_WIDTH/WIN_HEIGHT, 0.1f, 1000.f);
     camera.LookForward ();
 
-    scene.ambient_color = vec4 (0.1f, 0.1f, 0.1f, 1.f);
+    scene.ambient_color = vec4 (0.05f, 0.05f, 0.05f, 1.f);
     scene.p_active_camera = &camera;
 
     scene.lights[0].color = vec4 (0.9f, 0.9f, 0.9f, 1.f);
@@ -81,12 +81,12 @@ bool init ()
         sphere->transform.position.x = glm::cos (i*90.f) * 2.f;
         sphere->transform.position.z = glm::sin (i*90.f) * 2.f;
 
-        util::gl::icosphere (sphere->gldata, 1, 0);
+        util::gl::icosphere (sphere->gldata, 1.5f, 0);
         sphere->p_shader = &shader;
         sphere->material.diffuse_color = vec4 (0.7f, 0.1f, 0.1f, 1.f);
         sphere->material.specular_color = vec4 (1.f, 1.f, 1.f, 1.f);
         sphere->material.emission_color = vec4 (0.f, 0.f, 0.f, 1.f);
-        sphere->material.shininess = 100.f;
+        sphere->material.shininess = 32.f;
 
         scene.models.emplace_back (sphere);
     }

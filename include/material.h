@@ -10,6 +10,8 @@ namespace graphics
 
     struct Material
     {
+        Material () : shininess (0) {}
+
         vec4 diffuse_color;
         vec4 specular_color;
         vec4 emission_color;

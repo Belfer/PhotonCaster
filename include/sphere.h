@@ -43,6 +43,7 @@ namespace graphics
                 inter.distance = dSq;
                 inter.hitpoint = transform.position + i;
                 inter.normal = i / radius;
+                inter.material = material;
             }
 
             return true;

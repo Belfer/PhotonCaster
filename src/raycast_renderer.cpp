@@ -133,45 +133,57 @@ namespace graphics
         uint color;
         unsigned char* p_col = reinterpret_cast<unsigned char*> (&color);
 
-        //vec3 pos = scene.p_active_camera->position;
-        //vec3 eyedirn = scene.p_active_camera->forward ();
+        vec3 diffuseColor = vec3 (inter.material.diffuse_color);
+        vec3 specularColor = vec3 (inter.material.specular_color);
 
-        vec3 normal = inter.normal;
-        normal += 1; normal *= 0.5f;
-        vec4 fragColor = vec4 (normal, 1);//scene.ambient_color + inter.material.emission_color;
-        /*for (int i=0; i<scene.num_lights; ++i)
+        vec3 ambient = vec3 (scene.ambient_color);
+        vec3 diffuse = vec3 ();
+        vec3 specular = vec3 ();
+
+        vec3 viewDir = glm::normalize (scene.p_active_camera->position - inter.hitpoint);
+
+        //vec3 normal = inter.normal;
+        //normal += 1; normal *= 0.5f;vec4 (normal, 1);//
+        //vec4 fragColor = scene.ambient_color + inter.material.emission_color;
+        for (int i=0; i<scene.num_lights; ++i)
         {
-            if (scene.lights[i].type == DIRECTIONAL) {
-                vec3 dir = normalize (vec3 (scene.lights[i].position));
-                float nDotL = glm::dot (inter.normal, dir);
-                fragColor += inter.material.diffuse_color * scene.lights[i].color * glm::max (nDotL, 0.f);
+            vec3 lightColor = vec3 (scene.lights[i].color);
+
+            // Ambient
+            const float ambientStrength = 0.1f;
+            ambient += lightColor * ambientStrength;
+
+            vec3 lightPos = vec3 (scene.lights[i].position);
+            vec3 lightDir;
+
+            switch (scene.lights[i].type) {
+            case DIRECTIONAL:
+                lightDir = glm::normalize (lightPos);
+                break;
+            case POINT:
+                lightDir = glm::normalize (lightPos - inter.hitpoint);
+                break;
             }
 
-            // Directional
-            if (scene.lights[i].position.w == 0) {
-                vec3 ldir = normalize (vec3 (scene.lights[i].position));
-                vec3 h = normalize (ldir + eyedirn);
-                fragColor += ComputeLight (inter.material.diffuse_color,
-                                           inter.material.specular_color,
-                                           inter.material.shininess,
-                                           ldir, scene.lights[i].color, inter.normal, h);
-            }
-            // Point
-            else {
-                vec3 lpos = vec3 (scene.lights[i].position) / scene.lights[i].position.w;
-                vec3 ldir = normalize (lpos - pos); // no attenuation
-                vec3 h    = normalize (ldir + eyedirn);
-                fragColor += ComputeLight (inter.material.diffuse_color,
-                                           inter.material.specular_color,
-                                           inter.material.shininess,
-                                           ldir, scene.lights[i].color, inter.normal, h);
-            }
-        }*/
+            // Diffuse
+            float diff = glm::max (glm::dot (lightDir, inter.normal), 0.f);
+            diffuse += diffuseColor * diff * lightColor;
 
-        p_col[3] = (unsigned char)(fragColor.x * 0xFF);
-        p_col[2] = (unsigned char)(fragColor.y * 0xFF);
-        p_col[1] = (unsigned char)(fragColor.z * 0xFF);
-        p_col[0] = (unsigned char)(fragColor.w * 0xFF);
+            // Specular
+            const float specularStrength = 0.5f;
+            vec3 reflectDir = glm::reflect (lightDir, inter.normal);
+            float spec = glm::pow (glm::max (glm::dot (viewDir, reflectDir), 0.f), inter.material.shininess);
+            specular += specularColor * spec * (lightColor * specularStrength);
+        }
+
+        vec3 fragColor = ambient + diffuse + specular;
+        fragColor = glm::clamp (fragColor, vec3 (), vec3 (1,1,1));
+
+        p_col[0] = (unsigned char)(fragColor.x * 0xFF);
+        p_col[1] = (unsigned char)(fragColor.y * 0xFF);
+        p_col[2] = (unsigned char)(fragColor.z * 0xFF);
+        p_col[3] = (unsigned char)(0xFF);
+
         return color;
     }
 
