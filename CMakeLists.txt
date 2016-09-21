@@ -43,6 +43,7 @@ add_executable(${PROJECT_NAME}
         ${INCLUDE_DIR}/shader.h
         ${INCLUDE_DIR}/texture.h
         ${INCLUDE_DIR}/transform.h
+        ${INCLUDE_DIR}/primitives.h
         ${INCLUDE_DIR}/ray.h
         ${INCLUDE_DIR}/raycast_renderer.h
         ${INCLUDE_DIR}/raster_renderer.h

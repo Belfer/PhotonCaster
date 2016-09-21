@@ -19,6 +19,7 @@ namespace graphics
     {
         Intersection () : distance (0) {}
         float distance;
+        vec3 hitpoint;
         vec3 normal;
         Material material;
     };

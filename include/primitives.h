@@ -47,45 +47,6 @@ namespace util
             data.SetUseIndices (true);
         }
 
-        static void screen (OpenGLMeshData& data, const float& size)
-        {
-            GLfloat vertices[] = {
-                -1.0f,-1.0f, 0.f,
-                -1.0f, 1.0f, 0.f,
-                 1.0f,-1.0f, 0.f,
-                 1.0f, 1.0f, 0.f
-            };
-
-            GLfloat normals[] = {
-                 0.f, 0.f, 1.f,
-                 0.f, 0.f, 1.f,
-                 0.f, 0.f, 1.f,
-                 0.f, 0.f, 1.f
-            };
-
-            GLfloat texcoords[] = {
-                 0.f, 0.f,
-                 0.f, 1.f,
-                 1.f, 0.f,
-                 1.f, 1.f
-            };
-
-            GLuint indices[] = {
-                0, 1, 2,
-                2, 1, 3
-            };
-
-            data.GenBuffers (1, 3, 1);
-            data.BindVertexArray (0);
-            data.ArrayBuffer (0, sizeof (vertices), vertices, GL_STATIC_DRAW, GL_FLOAT, 3);
-            data.ArrayBuffer (1, sizeof (normals), normals, GL_STATIC_DRAW, GL_FLOAT, 3);
-            data.ArrayBuffer (2, sizeof (texcoords), texcoords, GL_STATIC_DRAW, GL_FLOAT, 2);
-            data.ElementBuffer (0, sizeof (indices), indices, GL_STATIC_DRAW);
-            data.UnbindVertexArray ();
-            data.SetDrawCount (6);
-            data.SetUseIndices (true);
-        }
-
         static void plane (OpenGLMeshData& data, const float& size)
         {
             GLfloat vertices[12] = {
@@ -122,7 +83,7 @@ namespace util
             data.SetUseIndices (true);
         }
 
-        static void icoshpere (OpenGLMeshData& data, const float& radius, const uint& recursion)
+        static void icosphere (OpenGLMeshData& data, const float& radius, const uint& recursion)
         {
             GLfloat vertices[] = {
                  0.000f, 1.000f, 0.000f,    // Top-most point.

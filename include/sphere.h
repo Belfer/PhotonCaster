@@ -7,6 +7,7 @@
 #include "mesh_data.h"
 #include "shader.h"
 #include "util.h"
+#include <glm/gtx/string_cast.hpp>
 
 namespace graphics
 {
@@ -17,33 +18,33 @@ namespace graphics
 
         virtual bool Intersect (Intersection& inter, const Ray& ray)
         {
-            vec3 p, w;
-            float h;
+            vec3 p = ray.position - transform.position;
+            float rSq = radius*radius;
+            float pDotd = glm::dot (p, ray.direction);
 
-            w = transform.position - ray.position;
-            p = ray.position + ((glm::dot (ray.direction, w) / glm::length (ray.direction)) * ray.direction);
-            h = glm::length (transform.position - p);
-
-            if (h > radius) { // No intersection
+            if (pDotd < 0 || glm::dot (p,p) < rSq) {
                 return false;
-
-            } else if (h < radius) { // 2 intersections
-                vec3 p1;
-                if (glm::length (w) > radius) {
-                    p1 = glm::length (p-ray.position) - transform.position;
-                } else {
-                    p1 = glm::length (p-ray.position) + transform.position;
-                }
-
-                inter.distance = glm::length (p1-ray.position);
-                inter.normal = glm::normalize (p1-transform.position);
-
-            } else { // 1 intersection
-                inter.distance = glm::length (p-ray.position);
-                inter.normal = glm::normalize (p-transform.position);
             }
 
-            inter.material = material;
+            vec3 a = p - pDotd * ray.direction;
+            float aSq = glm::dot (a,a);
+
+            if (aSq > rSq) {
+                return false;
+            }
+
+            float h = glm::sqrt (rSq - aSq);
+
+            vec3 i = a - h * ray.direction;
+            vec3 d = (transform.position + i) - ray.position;
+            float dSq = glm::dot (d,d);
+
+            if (inter.distance == 0 || dSq < inter.distance) {
+                inter.distance = dSq;
+                inter.hitpoint = transform.position + i;
+                inter.normal = i / radius;
+            }
+
             return true;
         }
 

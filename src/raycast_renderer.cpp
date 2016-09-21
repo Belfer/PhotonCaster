@@ -119,9 +119,11 @@ namespace graphics
     bool RaycastRenderer::Intersect (Intersection& inter, const Ray& ray, const Scene& scene)
     {
         for (auto model : scene.models) {
-            if (model->Intersect (inter, ray)) {
-                return true;
-            }
+            model->Intersect (inter, ray);
+        }
+
+        if (inter.distance != 0) {
+            return true;
         }
         return false;
     }
@@ -131,12 +133,20 @@ namespace graphics
         uint color;
         unsigned char* p_col = reinterpret_cast<unsigned char*> (&color);
 
-        vec3 pos = scene.p_active_camera->position;
-        vec3 eyedirn = scene.p_active_camera->forward ();
+        //vec3 pos = scene.p_active_camera->position;
+        //vec3 eyedirn = scene.p_active_camera->forward ();
 
-        vec4 fragColor = vec4 (inter.normal, 1);//scene.ambient_color + inter.material.emission_color;
-        for (int i=0; i<scene.num_lights; ++i)
+        vec3 normal = inter.normal;
+        normal += 1; normal *= 0.5f;
+        vec4 fragColor = vec4 (normal, 1);//scene.ambient_color + inter.material.emission_color;
+        /*for (int i=0; i<scene.num_lights; ++i)
         {
+            if (scene.lights[i].type == DIRECTIONAL) {
+                vec3 dir = normalize (vec3 (scene.lights[i].position));
+                float nDotL = glm::dot (inter.normal, dir);
+                fragColor += inter.material.diffuse_color * scene.lights[i].color * glm::max (nDotL, 0.f);
+            }
+
             // Directional
             if (scene.lights[i].position.w == 0) {
                 vec3 ldir = normalize (vec3 (scene.lights[i].position));
@@ -156,7 +166,7 @@ namespace graphics
                                            inter.material.shininess,
                                            ldir, scene.lights[i].color, inter.normal, h);
             }
-        }
+        }*/
 
         p_col[3] = (unsigned char)(fragColor.x * 0xFF);
         p_col[2] = (unsigned char)(fragColor.y * 0xFF);

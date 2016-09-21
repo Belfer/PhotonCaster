@@ -74,17 +74,22 @@ bool init ()
     shader.AddShader (GL_FRAGMENT_SHADER, util::load_file ("../shaders/light.frag"+glslVersion+".glsl"));
     shader.Compile ();
 
-    Sphere* shpere = new Sphere ();
-    shpere->radius = 0.5f;
+    for (uint i=0; i<3; ++i) {
+        Sphere* sphere = new Sphere ();
+        sphere->radius = 1.f;
+        sphere->transform.scale = vec3 (1,1,1) * sphere->radius;
+        sphere->transform.position.x = glm::cos (i*90.f) * 2.f;
+        sphere->transform.position.z = glm::sin (i*90.f) * 2.f;
 
-    util::gl::icoshpere (shpere->gldata, shpere->radius, 0);
-    shpere->p_shader = &shader;
-    shpere->material.diffuse_color = vec4 (0.7f, 0.1f, 0.1f, 1.f);
-    shpere->material.specular_color = vec4 (1.f, 1.f, 1.f, 1.f);
-    shpere->material.emission_color = vec4 (0.f, 0.f, 0.f, 1.f);
-    shpere->material.shininess = 100.f;
+        util::gl::icosphere (sphere->gldata, 1, 0);
+        sphere->p_shader = &shader;
+        sphere->material.diffuse_color = vec4 (0.7f, 0.1f, 0.1f, 1.f);
+        sphere->material.specular_color = vec4 (1.f, 1.f, 1.f, 1.f);
+        sphere->material.emission_color = vec4 (0.f, 0.f, 0.f, 1.f);
+        sphere->material.shininess = 100.f;
 
-    scene.models.emplace_back (shpere);
+        scene.models.emplace_back (sphere);
+    }
 
     /*for (uint i=0; i<8; ++i) {
         Triangle* tri = new Triangle ();
@@ -182,7 +187,7 @@ void update ()
     vec3 tmp = glm::angleAxis (counter, UP) * FORWARD;
     scene.lights[0].position = vec4 (tmp.x, tmp.y, tmp.z, 0.f);
 
-    camera.Perspective (70.f, (float) WIN_WIDTH/WIN_HEIGHT, 0.1f, 1000.f);
+    //camera.Perspective (70.f, (float) WIN_WIDTH/WIN_HEIGHT, 0.1f, 1000.f);
     camera.LookForward ();
 }
 
