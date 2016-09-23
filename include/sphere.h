@@ -18,31 +18,23 @@ namespace graphics
 
         virtual bool Intersect (Intersection& inter, const Ray& ray)
         {
-            vec3 p = ray.position - transform.position;
-            float rSq = radius*radius;
-            float pDotd = glm::dot (p, ray.direction);
+            float t0, t1;
 
-            if (pDotd < 0 || glm::dot (p,p) < rSq) {
-                return false;
+            vec3 o_c = ray.origin - transform.position;
+            float b = 2.f * glm::dot (ray.direction, o_c);
+            float c = glm::dot (o_c, o_c) - radius*radius;
+
+            if (!util::solve_quadratic (1, b, c, t0, t1)) return false;
+
+            if (t0 < 0) {
+                t0 = t1;
+                if (t0 < 0) return false;
             }
 
-            vec3 a = p - pDotd * ray.direction;
-            float aSq = glm::dot (a,a);
-
-            if (aSq > rSq) {
-                return false;
-            }
-
-            float h = glm::sqrt (rSq - aSq);
-
-            vec3 i = a - h * ray.direction;
-            vec3 d = (transform.position + i) - ray.position;
-            float dSq = glm::dot (d,d);
-
-            if (inter.distance == 0 || dSq < inter.distance) {
-                inter.distance = dSq;
-                inter.hitpoint = transform.position + i;
-                inter.normal = i / radius;
+            if (inter.distance == 0 || t0 < inter.distance) {
+                inter.distance = t0;
+                inter.hitpoint = ray.origin + ray.direction * t0;
+                inter.normal   = glm::normalize (inter.hitpoint - transform.position);
                 inter.material = material;
             }
 

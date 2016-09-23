@@ -112,8 +112,8 @@ namespace graphics
         a = tan (fovx*0.5f) * ((x - half_width) / half_width);
         b = tan (fovy*0.5f) * ((half_height - y) / half_height);
 
-        ray.position = camera.position;
-        ray.direction = glm::normalize (a*i + b*j - k);
+        ray.origin = camera.position;
+        ray.direction = -glm::normalize (a*i + b*j - k);
     }
 
     bool RaycastRenderer::Intersect (Intersection& inter, const Ray& ray, const Scene& scene)
@@ -133,6 +133,11 @@ namespace graphics
         uint color;
         unsigned char* p_col = reinterpret_cast<unsigned char*> (&color);
 
+        vec3 fragColor;
+
+        vec3 viewDir = glm::normalize (inter.hitpoint - scene.p_active_camera->position);
+        vec3 normal = inter.normal;
+
         vec3 diffuseColor = vec3 (inter.material.diffuse_color);
         vec3 specularColor = vec3 (inter.material.specular_color);
 
@@ -140,45 +145,76 @@ namespace graphics
         vec3 diffuse = vec3 ();
         vec3 specular = vec3 ();
 
-        vec3 viewDir = glm::normalize (scene.p_active_camera->position - inter.hitpoint);
+        fragColor = diffuseColor;
 
-        //vec3 normal = inter.normal;
-        //normal += 1; normal *= 0.5f;vec4 (normal, 1);//
-        //vec4 fragColor = scene.ambient_color + inter.material.emission_color;
-        for (int i=0; i<scene.num_lights; ++i)
+        /*for (int i=0; i<scene.num_lights; ++i)
         {
             vec3 lightColor = vec3 (scene.lights[i].color);
+
+            vec3 lightPos = vec3 (scene.lights[i].position);
+            vec3 lightDir;
+
+            bool shadowed = false;
+            Ray shadowRay; Intersection shadowInter;
+
+            switch (scene.lights[i].type) {
+            case DIRECTIONAL:
+                lightDir = glm::normalize (lightPos);
+                shadowRay.direction = lightDir;
+                break;
+            case POINT:
+                lightDir = glm::normalize (lightPos - inter.hitpoint);
+                shadowRay.direction = -glm::normalize (inter.hitpoint - lightPos);
+                break;
+            }
+
+            shadowRay.origin = inter.hitpoint + shadowRay.direction * EPSILON;
+
+            for (auto model : scene.models) {
+                if (model->Intersect (shadowInter, shadowRay)) {
+                    shadowed = true;
+                    break;
+                }
+            }
 
             // Ambient
             const float ambientStrength = 0.1f;
             ambient += lightColor * ambientStrength;
 
-            vec3 lightPos = vec3 (scene.lights[i].position);
-            vec3 lightDir;
+            if (!shadowed) {
+                // Diffuse
+                float diff = glm::max (glm::dot (lightDir, normal), 0.f);
+                diffuse += diffuseColor * diff * lightColor;
 
-            switch (scene.lights[i].type) {
-            case DIRECTIONAL:
-                lightDir = glm::normalize (lightPos);
-                break;
-            case POINT:
-                lightDir = glm::normalize (lightPos - inter.hitpoint);
-                break;
+                // Specular
+                const float specularStrength = 1.0f;//0.5f;
+                vec3 reflectDir = glm::reflect (lightDir, normal);
+                float spec = glm::pow (glm::max (glm::dot (viewDir, reflectDir), 0.f), inter.material.shininess);
+                specular += specularColor * spec * (lightColor * specularStrength);
             }
-
-            // Diffuse
-            float diff = glm::max (glm::dot (lightDir, inter.normal), 0.f);
-            diffuse += diffuseColor * diff * lightColor;
-
-            // Specular
-            const float specularStrength = 0.5f;
-            vec3 reflectDir = glm::reflect (lightDir, inter.normal);
-            float spec = glm::pow (glm::max (glm::dot (viewDir, reflectDir), 0.f), inter.material.shininess);
-            specular += specularColor * spec * (lightColor * specularStrength);
         }
 
-        vec3 fragColor = ambient + diffuse + specular;
-        fragColor = glm::clamp (fragColor, vec3 (), vec3 (1,1,1));
+        switch (mode) {
+        case LIGHTING:
+            fragColor = ambient + diffuse + specular;
+            break;
 
+        case DIFFUSE:
+            fragColor = diffuse;
+            break;
+
+        case SPECULAR:
+            fragColor = specular;
+            break;
+
+        case NORMALS:
+            vec3 normal2 = inter.normal;
+            normal2 += 1; normal2 *= 0.5f;
+            fragColor = normal2;
+            break;
+        }*/
+
+        fragColor = glm::clamp (fragColor, vec3 (), vec3 (1,1,1));
         p_col[0] = (unsigned char)(fragColor.x * 0xFF);
         p_col[1] = (unsigned char)(fragColor.y * 0xFF);
         p_col[2] = (unsigned char)(fragColor.z * 0xFF);

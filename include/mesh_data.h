@@ -3,8 +3,10 @@
 
 #include <iostream>
 #include <vector>
-#include <GL/glew.h>
 #include <glm/glm.hpp>
+#include "vertex.h"
+#define GLEW_STATIC
+#include <GL/glew.h>
 
 using namespace glm;
 using namespace std;
@@ -18,15 +20,42 @@ namespace graphics
         PolygonMeshData () {}
         virtual ~PolygonMeshData () {}
 
-        void AddVertices (const size_t& size, float* vertices);
-        void AddTriangle (const uint& a, const uint& b, const uint& c);
+        inline void SetVertices (const size_t& size, Vertex* vertices)
+        {
+            this->vertices = vector<Vertex> (vertices, vertices + size);
+        }
+        inline void SetIndices (const size_t& size, uint* indices)
+        {
+            this->indices = vector<uint> (indices, indices + size);
+        }
+
+        inline void SetVertices (vector<Vertex>& vertices) { this->vertices = vertices; }
+        inline void SetIndices (vector<uint>& indices) { this->indices = indices; }
+
+        inline void AddVertices (const size_t& size, Vertex* vertices)
+        {
+            for (uint i=0; i<size; ++i) {
+                this->vertices.emplace_back (vertices[i]);
+            }
+        }
+        void AddIndices (const size_t& size, uint* indices)
+        {
+            for (uint i=0; i<size; ++i) {
+                this->indices.emplace_back (indices[i]);
+            }
+        }
+
+        void AddTriangle (const uint& a, const uint& b, const uint& c)
+        {
+            indices.emplace_back (a); indices.emplace_back (b); indices.emplace_back (c);
+        }
 
         inline uint GetTriCount () const { return tri_count; }
 
     private:
         uint tri_count;
         vector<uint> indices;
-        vector<vec3> vertices;
+        vector<Vertex> vertices;
     };
 
     class OpenGLMeshData

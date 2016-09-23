@@ -1,15 +1,15 @@
 ### GLFW ###
-# add_subdirectory (glfw-3.1.2)
+add_subdirectory (glfw-3.1.2)
 
-# include_directories (
-#	glfw-3.1.2/include/GLFW/
-#	glew-1.13.0/include/ )
+include_directories (
+    glfw-3.1.2/include/GLFW/
+    glew-1.13.0/include/ )
 
 set (OPENGL_LIBRARY
-	${OPENGL_LIBRARY}
-	-lGL -lGLU -lXrandr -lXext -lX11 -lrt
-        ${CMAKE_DL_LIBS} )
-        # ${GLFW_LIBRARIES} )
+    ${OPENGL_LIBRARY}
+    -lGL -lGLU -lXrandr -lXext -lX11 -lrt
+    ${CMAKE_DL_LIBS}
+    ${GLFW_LIBRARIES} )
 
 ### GLEW ###
 set (GLEW_SOURCE
@@ -27,7 +27,7 @@ target_link_libraries (glew
 	${EXTRA_LIBS} )
 
 ### SDL 2 ###
-add_subdirectory (SDL2-2.0.4)
+# add_subdirectory (SDL2-2.0.4)
 
 ### ASSIMP ###
 
@@ -51,18 +51,18 @@ add_subdirectory (assimp-3.0.1270/code)
 
 ### SOIL ###
 set (SOIL_SRCS
-	soil/src/image_DXT.c
-	soil/src/image_helper.c
-	soil/src/SOIL.c
+    soil/src/image_DXT.c
+    soil/src/image_helper.c
+    soil/src/SOIL.c
     soil/src/stb_image_aug.c
 )
 
 set (SOIL_HDRS
-	soil/src/image_DXT.h
-	soil/src/image_helper.h
-	soil/src/SOIL.h
-	soil/src/stbi_DDS_aug.h
-	soil/src/stbi_DDS_aug_c.h
+    soil/src/image_DXT.h
+    soil/src/image_helper.h
+    soil/src/SOIL.h
+    soil/src/stbi_DDS_aug.h
+    soil/src/stbi_DDS_aug_c.h
     soil/src/stb_image_aug.h
 )
 

@@ -16,6 +16,24 @@ using namespace graphics;
 namespace util
 {
 
+    inline static bool solve_quadratic (const float &a, const float &b, const float &c, float &x0, float &x1)
+    {
+        float discr = b*b - 4*a*c;
+        if (discr < 0) {
+            return false;
+
+        } else if (discr == 0) {
+            x0 = x1 = -b / 2.f*a;
+
+        } else {
+            x0 = (-b + glm::sqrt (discr)) / 2.f*a;
+            x1 = (-b - glm::sqrt (discr)) / 2.f*a;
+            if (x0 > x1) std::swap (x0, x1);
+        }
+
+        return true;
+    }
+
     template<typename T>
     inline static void reverse (T* p_data, T* p_buffer, const size_t& size)
     {
@@ -31,7 +49,7 @@ namespace util
         glslVersion.erase (std::find (glslVersion.begin (), glslVersion.end (), '.'));
         //str.erase (std::remove (str.begin (), str.end (), '.'), str.end ());
         if (glslVersion != "120" && glslVersion != "130") {
-            glslVersion = "120";
+            glslVersion = "130";
         }
 
         return glslVersion;

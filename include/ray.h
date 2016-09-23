@@ -9,9 +9,11 @@ using namespace glm;
 namespace graphics
 {
 
+    static const float EPSILON = 0.0002f;
+
     struct Ray
     {
-        vec3 position;
+        vec3 origin;
         vec3 direction;
     };
 

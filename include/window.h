@@ -3,8 +3,11 @@
 
 #include <assert.h>
 #include <iostream>
-#include <SDL2/SDL.h>
+#define GLEW_STATIC
 #include <GL/glew.h>
+#include <glfw3.h>
+
+using namespace std;
 
 class Window
 {
@@ -19,24 +22,28 @@ private:
     void Setup ();
 
 public:
-
-    bool Create (const char* title, int width, int height);
+    bool Create (const string& title, int width, int height);
 
     void Destroy ();
 
-    inline void Clear () { glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); }
+    inline bool ShouldClose () const { return glfwWindowShouldClose (p_window); }
 
-    inline void SwapBuffers () { SDL_GL_SwapWindow (p_window); }
+    inline void Clear () { glClear (GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT); }
+
+    inline void GetFramebufferSize (int& width, int& height) const { glfwGetFramebufferSize (p_window, &width, &height); }
+
+    inline void SwapBuffers () { glfwSwapBuffers (p_window); }
 
     inline void SetClearColor (GLclampf r, GLclampf g, GLclampf b) { glClearColor (r, g, b, 1.f); }
 
-    inline size_t GetWidth () const { return width; }
-    inline size_t GetHeight () const { return height; }
+    inline uint GetWidth () const { return width; }
+    inline uint GetHeight () const { return height; }
+
+    inline GLFWwindow* const GetWindow () const { return p_window; }
 
 private:
-    SDL_Window* p_window;
-    SDL_GLContext glContext;
-    size_t width, height;
+    GLFWwindow* p_window;
+    uint width, height;
 };
 
 #endif // WINDOW_H

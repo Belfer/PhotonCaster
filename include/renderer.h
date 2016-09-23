@@ -8,14 +8,29 @@
 namespace graphics
 {
 
+    enum RenderMode
+    {
+        LIGHTING,
+        DIFFUSE,
+        SPECULAR,
+        EMISSION,
+        NORMALS,
+        POSITION
+    };
+
     class Renderer
     {
     public:
-        Renderer (Window* const window) : p_window (window) {}
+        Renderer (Window* const window) : p_window (window), mode (LIGHTING) {}
 
         virtual void render (const Scene& scene) = 0;
 
         inline Window& GetWindow () const { return *p_window; }
+
+        inline void SetRenderMode (const RenderMode& mode) { this->mode = mode; }
+
+    protected:
+        RenderMode mode;
 
     private:
         Window* p_window;

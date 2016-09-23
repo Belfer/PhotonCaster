@@ -3,25 +3,6 @@
 namespace graphics
 {
 
-    void PolygonMeshData::AddVertices (const size_t& size, float* data)
-    {
-        for (uint i=0; i<size;) {
-            vec3 vertex;
-            vertex.x = data[++i];
-            vertex.y = data[++i];
-            vertex.z = data[++i];
-
-            vertices.emplace_back (vertex);
-        }
-    }
-
-    void PolygonMeshData::AddTriangle (const uint& a, const uint& b, const uint& c)
-    {
-        indices.emplace_back (a);
-        indices.emplace_back (b);
-        indices.emplace_back (c);
-    }
-
     void OpenGLMeshData::GenBuffers (uint VAOsize, uint VBOsize, uint EBOsize)
     {
         DeleteBuffers ();

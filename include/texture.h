@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-#include <GL/glew.h>
+#include <glfw3.h>
 #include <assert.h>
 #include <glm/glm.hpp>
 

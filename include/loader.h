@@ -4,7 +4,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <GL/glew.h>
+#include <glfw3.h>
 
 namespace util
 {
