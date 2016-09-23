@@ -88,8 +88,8 @@ bool init ()
     scene.num_lights++;
 
     shader.CreateProgram ();
-    shader.AddShader (GL_VERTEX_SHADER, util::load_file ("../shaders/light.vert"+glslVersion+".glsl"));
-    shader.AddShader (GL_FRAGMENT_SHADER, util::load_file ("../shaders/light.frag"+glslVersion+".glsl"));
+    shader.AddShader (GL_VERTEX_SHADER, util::load_file ("../shaders/"+glslVersion+"/light.vert.glsl"));
+    shader.AddShader (GL_FRAGMENT_SHADER, util::load_file ("../shaders/"+glslVersion+"/light.frag.glsl"));
     shader.Compile ();
 
     Triangle* tri = new Triangle ();

@@ -3,6 +3,7 @@
 void error_callback (int error, const char* description)
 {
     std::cerr << "GLFW Error: " << description << "\n";
+    throw 0;
 }
 
 void Window::Setup ()
@@ -52,7 +53,8 @@ bool Window::Create (const string& title, int width, int height)
 
 void Window::Destroy ()
 {
-    glfwTerminate ();
     if (p_window) glfwDestroyWindow (p_window);
     p_window = nullptr;
+
+    glfwTerminate ();
 }

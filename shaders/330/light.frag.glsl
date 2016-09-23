@@ -1,7 +1,9 @@
-# version 120
+# version 330 core
 
-varying vec4 vertex;
-varying vec3 normal;
+in vec4 vertex;
+in vec3 normal;
+
+out vec4 color;
 
 const int MAX_NUM_LIGHTS = 8;
 uniform bool enablelighting;
@@ -29,10 +31,10 @@ vec4 ComputeLight (const in vec3 direction, const in vec4 lightcolor, const in v
     float nDotL = dot (normal, direction);
     vec4 lambert = diffuse_color * lightcolor * max (nDotL, 0.0);
 
-    //float nDotH = dot (normal, halfvec);
-    //vec4 phong = specular_color * lightcolor * pow (max (nDotH, 0.0), shininess);
+    float nDotH = dot (normal, halfvec);
+    vec4 phong = specular_color * lightcolor * pow (max (nDotH, 0.0), shininess);
 
-    vec4 retval = lambert;// + phong;
+    vec4 retval = lambert + phong;
     return retval;
 }
 
@@ -65,9 +67,9 @@ void main (void)
                 fragColor += ComputeLight (ldir, lights[i].color, inormal, h);
             }
         }
-        gl_FragColor = fragColor;
+        color = fragColor;
 
     } else {
-        gl_FragColor = diffuse_color;
+        color = diffuse_color;
     }
 }

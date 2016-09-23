@@ -47,10 +47,6 @@ namespace util
     {
         string glslVersion = string ((char*)glGetString (GL_SHADING_LANGUAGE_VERSION));
         glslVersion.erase (std::find (glslVersion.begin (), glslVersion.end (), '.'));
-        //str.erase (std::remove (str.begin (), str.end (), '.'), str.end ());
-        if (glslVersion != "120" && glslVersion != "130") {
-            glslVersion = "130";
-        }
 
         return glslVersion;
     }

@@ -21,8 +21,8 @@ namespace graphics
         string glslVersion = util::glsl_version ();
 
         shader.CreateProgram ();
-        shader.AddShader (GL_VERTEX_SHADER, util::load_file ("../shaders/screen.vert."+glslVersion+".glsl"));
-        shader.AddShader (GL_FRAGMENT_SHADER, util::load_file ("../shaders/screen.frag."+glslVersion+".glsl"));
+        shader.AddShader (GL_VERTEX_SHADER, util::load_file ("../shaders/"+glslVersion+"/screen.vert.glsl"));
+        shader.AddShader (GL_FRAGMENT_SHADER, util::load_file ("../shaders/"+glslVersion+"/screen.frag.glsl"));
         shader.Compile ();
 
         GLfloat vertices[] = {
