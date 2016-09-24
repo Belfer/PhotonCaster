@@ -16,6 +16,7 @@ void Window::Setup ()
     glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint (GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint (GLFW_SAMPLES, 16);
 }
 
 Window::~Window ()
@@ -41,6 +42,13 @@ bool Window::Create (const string& title, int width, int height)
         Destroy ();
         return false;
     }
+    glEnable (GL_DEPTH_TEST);
+    glEnable (GL_DEPTH_CLAMP);
+    glEnable (GL_MULTISAMPLE);
+
+    glEnable (GL_CULL_FACE);
+    glCullFace (GL_BACK);
+    glFrontFace (GL_CCW);
 
     glfwSwapInterval (1);
     glfwGetFramebufferSize (p_window, &width, &height);

@@ -145,9 +145,7 @@ namespace graphics
         vec3 diffuse = vec3 ();
         vec3 specular = vec3 ();
 
-        fragColor = diffuseColor;
-
-        /*for (int i=0; i<scene.num_lights; ++i)
+        for (int i=0; i<scene.num_lights; ++i)
         {
             vec3 lightColor = vec3 (scene.lights[i].color);
 
@@ -212,7 +210,7 @@ namespace graphics
             normal2 += 1; normal2 *= 0.5f;
             fragColor = normal2;
             break;
-        }*/
+        }
 
         fragColor = glm::clamp (fragColor, vec3 (), vec3 (1,1,1));
         p_col[0] = (unsigned char)(fragColor.x * 0xFF);
