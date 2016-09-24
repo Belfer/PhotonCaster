@@ -16,6 +16,10 @@ namespace graphics
     {
         float radius;
 
+        virtual bool Update (const float& dt)
+        {
+        }
+
         virtual bool Intersect (Intersection& inter, const Ray& ray)
         {
             float t0, t1;

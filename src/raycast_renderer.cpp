@@ -6,13 +6,24 @@
 #include <SOIL.h>
 #include <math.h>
 #include <algorithm>
+#include <thread>
 
 using namespace std;
 
 namespace graphics
 {
 
-    static vec4 ComputeLight (const vec4& diffuse_color, const vec4& specular_color, const float& shininess,
+    void threaded_chunk_render (const Scene& scene, RenderMode mode, uint buffwidth, uint buffheight, uint* buffer, const uint& x, const uint& y, const uint& w, const uint& h);
+
+    void RayTrace (const Scene& scene, RenderMode mode, const uint& width, const uint& height, uint* buffer);
+
+    void RayThruPixel (Ray& ray, const Camera& camera, const uint& x, const uint& y, const uint& w, const uint& h);
+
+    bool Intersect (Intersection& inter, const Ray& ray, const Scene& scene);
+
+    uint FindColor (const Intersection& inter, const Scene& scene, RenderMode mode);
+
+    vec4 ComputeLight (const vec4& diffuse_color, const vec4& specular_color, const float& shininess,
                               const vec3& direction, const vec4& lightcolor,
                               const vec3& normal, const vec3& halfvec);
 
@@ -65,7 +76,7 @@ namespace graphics
         const uint height = GetWindow ().GetHeight ();
 
         uint image[width][height];
-        RayTrace (scene, width, height, (uint*)image);
+        RayTrace (scene, mode, width, height, (uint*)image);
 
         texture.Bind (0);
         unsigned char* p_image = reinterpret_cast<unsigned char*> ((uint*)image);
@@ -75,18 +86,18 @@ namespace graphics
         screen.Draw ();
     }
 
-    void RaycastRenderer::RayTrace (const Scene& scene, const uint& width, const uint& height, uint* buffer)
+    void threaded_chunk_render (const Scene& scene, RenderMode mode, uint buffwidth, uint buffheight, uint* buffer, const uint& x, const uint& y, const uint& w, const uint& h)
     {
-        for (uint i=0; i<height; ++i) {
-            for (uint j=0; j<width; ++j) {
-                uint* p_col = buffer + i*width + j;
+        for (uint i=y; i<y+h; ++i) {
+            for (uint j=x; j<x+w; ++j) {
+                uint* p_col = buffer + i*buffwidth + j;
 
                 Ray ray;
                 Intersection hit;
 
-                RayThruPixel (ray, *scene.p_active_camera, j, i);
+                RayThruPixel (ray, *scene.p_active_camera, j, i, buffwidth, buffheight);
                 if (Intersect (hit, ray, scene)) {
-                    *p_col = FindColor (hit, scene);
+                    *p_col = FindColor (hit, scene, mode);
                 } else {
                     *p_col = 0xFF000000;
                 }
@@ -94,7 +105,21 @@ namespace graphics
         }
     }
 
-    void RaycastRenderer::RayThruPixel (Ray& ray, const Camera& camera, const uint& x, const uint& y)
+    void RayTrace (const Scene& scene, RenderMode mode, const uint& width, const uint& height, uint* buffer)
+    {
+        uint hw = width * 0.5f;
+        uint hh = height * 0.5f;
+        std::thread t1 (threaded_chunk_render, scene, mode, width, height, buffer, 0, 0, hw, hh);
+        std::thread t2 (threaded_chunk_render, scene, mode, width, height, buffer, hw, 0, hw, hh);
+        std::thread t3 (threaded_chunk_render, scene, mode, width, height, buffer, 0, hh, hw, hh);
+        std::thread t4 (threaded_chunk_render, scene, mode, width, height, buffer, hw, hh, hw, hh);
+        t1.join ();
+        t2.join ();
+        t3.join ();
+        t4.join ();
+    }
+
+    void RayThruPixel (Ray& ray, const Camera& camera, const uint& x, const uint& y, const uint& w, const uint& h)
     {
         vec3 i, j, k;
         k = camera.forward ();
@@ -106,8 +131,8 @@ namespace graphics
         const float fovy = camera.fovy ();
         const float fovx = fovy * (camera.aspect ()-0.0026f);
 
-        const float half_width = GetWindow ().GetWidth ()*0.5f;
-        const float half_height = GetWindow ().GetHeight ()*0.5f;
+        const float half_width = w*0.5f;
+        const float half_height = h*0.5f;
         float a=0, b=0;
         a = tan (fovx*0.5f) * ((x - half_width) / half_width);
         b = tan (fovy*0.5f) * ((half_height - y) / half_height);
@@ -116,7 +141,7 @@ namespace graphics
         ray.direction = -glm::normalize (a*i + b*j - k);
     }
 
-    bool RaycastRenderer::Intersect (Intersection& inter, const Ray& ray, const Scene& scene)
+    bool Intersect (Intersection& inter, const Ray& ray, const Scene& scene)
     {
         for (auto model : scene.models) {
             model->Intersect (inter, ray);
@@ -128,7 +153,7 @@ namespace graphics
         return false;
     }
 
-    uint RaycastRenderer::FindColor (const Intersection& inter, const Scene& scene)
+    uint FindColor (const Intersection& inter, const Scene& scene, RenderMode mode)
     {
         uint color;
         unsigned char* p_col = reinterpret_cast<unsigned char*> (&color);
@@ -221,7 +246,7 @@ namespace graphics
         return color;
     }
 
-    static vec4 ComputeLight (const vec4& diffuse_color, const vec4& specular_color, const float& shininess,
+    vec4 ComputeLight (const vec4& diffuse_color, const vec4& specular_color, const float& shininess,
                               const vec3& direction, const vec4& lightcolor,
                               const vec3& normal, const vec3& halfvec)
     {

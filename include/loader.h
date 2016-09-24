@@ -4,7 +4,11 @@
 #include <string>
 #include <iostream>
 #include <fstream>
-#include <glfw3.h>
+#include <SOIL.h>
+#include <GL/glew.h>
+#include "texture.h"
+
+using namespace graphics;
 
 namespace util
 {
@@ -29,13 +33,25 @@ namespace util
         return out;
     }
 
-    static void load_image (const std::string& filename,
+    static void load_image (Texture& texture, const std::string& filename,
                             const GLuint& format, const GLuint& wrap,
                             const GLuint& filter, const GLuint& mipmap)
     {
-        /*unsigned char* image = SOIL_load_image (filename.c_str (), &width, &height, 0,
+        int width = 0, height = 0;
+        unsigned char* image = SOIL_load_image (filename.c_str (), &width, &height, 0,
                                                 format == GL_RGB ? SOIL_LOAD_RGB : SOIL_LOAD_RGBA);
-        glBindTexture (GL_TEXTURE_2D, texture);
+
+        texture.GenTexture ();
+        texture.Bind (0);
+        texture.SetWrapping (wrap);
+        texture.SetFiltering (filter);
+        texture.SetMipMapping (mipmap);
+        texture.CreateImage (format, width, height, image, true);
+        texture.Unbind ();
+
+        SOIL_free_image_data (image);
+
+        /*glBindTexture (GL_TEXTURE_2D, texture);
 
         // Wrapping
         glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap);

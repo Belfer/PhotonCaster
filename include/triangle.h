@@ -20,43 +20,51 @@ namespace graphics
         vec3 p1;
         vec3 p2;
         vec3 p3;
+    private:
+        vec3 tp1;
+        vec3 tp2;
+        vec3 tp3;
+
+    public:
+        virtual bool Update (const float& dt)
+        {
+            tp1 = vec3 (transform.model () * vec4 (p1, 1.f));
+            tp2 = vec3 (transform.model () * vec4 (p2, 1.f));
+            tp3 = vec3 (transform.model () * vec4 (p3, 1.f));
+        }
 
         virtual bool Intersect (Intersection& inter, const Ray& ray)
         {
-            vec3 v0 = p2-p1, v1 = p3-p1;
+            const vec3 e1 = tp2-tp1;
+            const vec3 e2 = tp3-tp1;
 
-            vec3 normal = glm::cross (v0, v1);
-            float nDotd = glm::dot (normal, ray.direction);
+            const vec3 n = glm::normalize (glm::cross (e1, e2));
+            const vec3 q = glm::cross (ray.direction, e2);
+            const float a = glm::dot (e1, q);
 
-            if (nDotd == 0) return false;
+            if (glm::abs (a) <= EPSILON) {// || glm::dot (n, ray.direction) >= 0) {
+                return false;
+            }
 
-            float t = (glm::dot (ray.direction, p1) - glm::dot (normal, ray.origin)) / nDotd;
+            const vec3 s = (ray.origin - tp1) / a;
+            const vec3 r = glm::cross (s, e1);
+            float ba = glm::dot (s, q);
+            float bb = glm::dot (r, ray.direction);
+            float bg = 1.0f - ba - bb;
 
-            vec3 p = ray.origin + ray.direction * t;
+            if ((ba < 0.f) || (bb < 0.f) || (bg < 0.f)) {
+                return false;
+            }
 
-            vec3 v2 = p-p1;
-            float d00 = glm::dot (v0, v0);
-            float d01 = glm::dot (v0, v1);
-            float d11 = glm::dot (v1, v1);
-            float d20 = glm::dot (v2, v0);
-            float d21 = glm::dot (v2, v1);
-            float denom = d00 * d11 - d01 * d01;
+            float t = glm::dot (e2, r);
+            if (t < 0.f) return false;
 
-            float b = (d11 * d20 - d01 * d21) / denom;
-            float g = (d00 * d21 - d01 * d20) / denom;
-            float a = 1.f - b - g;
-
-            if (a+b+g > 1.f) return false;
-
-            /*if (inter.distance == 0 || t < inter.distance) {
+            if (inter.distance == 0 || t < inter.distance) {
                 inter.distance = t;
-                inter.hitpoint = p;
-                inter.normal   = normal;
+                inter.hitpoint = ray.origin + ray.direction*t;
+                inter.normal   = n;
                 inter.material = material;
-            }*/
-            inter.distance = 1;
-            inter.material = material;
-
+            }
             return true;
         }
 

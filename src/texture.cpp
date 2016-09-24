@@ -18,12 +18,13 @@ namespace graphics
         }
     }
 
-    void Texture::CreateImage (GLint format, GLsizei width, GLsizei height, const GLvoid* data)
+    void Texture::CreateImage (GLint format, GLsizei width, GLsizei height, const GLvoid* data, bool mipmap)
     {
         this->width = width;
         this->height = height;
         if (!bound) glBindTexture (GL_TEXTURE_2D, texture);
         glTexImage2D (GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        if (mipmap) glGenerateMipmap (GL_TEXTURE_2D);
         if (!bound) glBindTexture (GL_TEXTURE_2D, 0);
     }
 

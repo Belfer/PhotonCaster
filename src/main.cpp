@@ -69,7 +69,7 @@ bool init ()
 
     p_controller = p_freelook;
 
-    camera.position = vec3 (4.538304f, 1.389559f, 7.531025f);
+    camera.position = vec3 (5.450677f, 1.621624f, 8.698809f);
     camera.orientation = quat (-0.324587f, -0.0252605f, 0.942668f, -0.0733619f);
     camera.Perspective (70.f, (float) WIN_WIDTH/WIN_HEIGHT, 0.1f, 1000.f);
     camera.Update ();
@@ -95,6 +95,7 @@ bool init ()
     tri->p1 = vec3 (-1,-1, 0);
     tri->p2 = vec3 ( 1,-1, 0);
     tri->p3 = vec3 ( 0, 1, 0);
+    tri->transform.position.x = 1.f;
 
     util::gl::triangle (tri->gldata, tri->p1, tri->p2, tri->p3);
     tri->p_shader = &shader;
@@ -121,7 +122,7 @@ bool init ()
         scene.models.emplace_back (sphere);
     }
 
-    /*for (uint i=0; i<8; ++i) {
+    for (uint i=0; i<8; ++i) {
         Triangle* tri = new Triangle ();
         tri->p1 = vec3 (-1,-1, 0);
         tri->p2 = vec3 ( 1,-1, 0);
@@ -137,7 +138,7 @@ bool init ()
         tri->material.shininess = 10000.f;
 
         scene.models.emplace_back (tri);
-    }*/
+    }
 
     return true;
 }
@@ -216,6 +217,10 @@ void update ()
 {
     p_controller->Update (camera, 0.1f, trans, mouse);
     camera.Update ();
+
+    for (auto model : scene.models) {
+        model->Update (0.f);
+    }
 }
 
 void render ()

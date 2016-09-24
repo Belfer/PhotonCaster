@@ -23,19 +23,10 @@ namespace graphics
         }
         virtual ~RaycastRenderer () {}
 
+        virtual void render (const Scene& scene);
+
     private:
         void Setup ();
-
-    public:
-        void render (const Scene& scene);
-
-        void RayTrace (const Scene& scene, const uint& width, const uint& height, uint* buffer);
-
-        void RayThruPixel (Ray& ray, const Camera& camera, const uint& x, const uint& y);
-
-        bool Intersect (Intersection& inter, const Ray& ray, const Scene& scene);
-
-        uint FindColor (const Intersection& inter, const Scene& scene);
 
         Shader shader;
         Texture texture;

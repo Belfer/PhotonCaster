@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-#include <glfw3.h>
+#include <GL/glew.h>
 #include <assert.h>
 #include <glm/glm.hpp>
 
@@ -19,7 +19,7 @@ namespace graphics
         void GenTexture ();
         void DeleteTexture ();
 
-        void CreateImage (GLint format, GLsizei width, GLsizei height, const GLvoid* data);
+        void CreateImage (GLint format, GLsizei width, GLsizei height, const GLvoid* data, bool mipmap = false);
         void CreateSubImage (GLint format, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, const GLvoid* data);
 
         void Bind (uint unit);

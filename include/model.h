@@ -21,6 +21,7 @@ namespace graphics
         OpenGLMeshData gldata;
         Shader* p_shader;
 
+        virtual bool Update (const float& dt) = 0;
         virtual bool Intersect (Intersection& inter, const Ray& ray) = 0;
 
         /* RTTI */
