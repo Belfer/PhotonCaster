@@ -9,29 +9,28 @@
 #include <sstream>
 #include <vector>
 #include "mesh_data.h"
+#include <glm/gtx/string_cast.hpp>
 
 using namespace std;
 using namespace graphics;
 
 namespace util
 {
+    const static hash<string> str_hashfn; // String hash function
 
-    inline static bool solve_quadratic (const float &a, const float &b, const float &c, float &x0, float &x1)
+    /* Returns a vec3 given the parameters r,g,b in the range [0,255] */
+    inline static vec3 rgb (GLubyte r, GLubyte g, GLubyte b)
     {
-        float discr = b*b - 4*a*c;
-        if (discr < 0) {
-            return false;
+        return vec3 (r/255.f, g/255.f, b/255.f);
+    }
 
-        } else if (discr == 0) {
-            x0 = x1 = -b / 2.f*a;
+    /* Returns the current glsl as a string without the . char */
+    inline static string glsl_version ()
+    {
+        string glslVersion = string ((char*)glGetString (GL_SHADING_LANGUAGE_VERSION));
+        glslVersion.erase (std::find (glslVersion.begin (), glslVersion.end (), '.'));
 
-        } else {
-            x0 = (-b + glm::sqrt (discr)) / 2.f*a;
-            x1 = (-b - glm::sqrt (discr)) / 2.f*a;
-            if (x0 > x1) std::swap (x0, x1);
-        }
-
-        return true;
+        return glslVersion;
     }
 
     template<typename T>
@@ -43,40 +42,39 @@ namespace util
         }
     }
 
-    inline static string glsl_version ()
+    inline static void split (const string& s, const string& delims, vector<string>& elems)
     {
-        string glslVersion = string ((char*)glGetString (GL_SHADING_LANGUAGE_VERSION));
-        glslVersion.erase (std::find (glslVersion.begin (), glslVersion.end (), '.'));
-
-        return glslVersion;
-    }
-
-    const static hash<string> str_hashfn;
-
-    inline static void split (const string& s, const char& delim, vector<string>& elems)
-    {
-        stringstream ss;
-        ss.str (s);
-        string item;
-        while (getline (ss, item, delim)) {
-            elems.emplace_back (item);
+        stringstream ss (s);
+        string line;
+        while (getline (ss, line))
+        {
+            size_t prev = 0, pos;
+            while ((pos = line.find_first_of(delims, prev)) != string::npos)
+            {
+                if (pos > prev)
+                    elems.push_back (line.substr (prev, pos-prev));
+                prev = pos+1;
+            }
+            if (prev < line.length())
+                elems.push_back (line.substr (prev, string::npos));
         }
     }
 
 
-    inline static vector<string> split (const string& s, const char& delim)
+    inline static vector<string> split (const string& s, const string& delims)
     {
         vector<string> elems;
-        split (s, delim, elems);
+        split (s, delims, elems);
         return elems;
     }
 
-    inline static std::string splitget (const std::string& src, const char& delim, const size_t& index)
+    inline static std::string splitget (const std::string& src, const string& delims, const size_t& index)
     {
         vector<string> strlist;
-        split (src, delim, strlist);
+        split (src, delims, strlist);
         return strlist[index];
     }
+
 }
 
 #endif // UTIL_H

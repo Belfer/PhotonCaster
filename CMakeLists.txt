@@ -28,7 +28,7 @@ add_executable(${PROJECT_NAME}
         ${SOURCE_DIR}/raycast_renderer.cpp
         ${SOURCE_DIR}/raster_renderer.cpp
         ${SOURCE_DIR}/controller.cpp
-        ${SOURCE_DIR}/util.cpp
+        ${SOURCE_DIR}/loader.cpp
 
         ${INCLUDE_DIR}/window.h
         ${INCLUDE_DIR}/input.h
@@ -52,6 +52,7 @@ add_executable(${PROJECT_NAME}
         ${INCLUDE_DIR}/raycast_renderer.h
         ${INCLUDE_DIR}/raster_renderer.h
         ${INCLUDE_DIR}/controller.h
+        ${INCLUDE_DIR}/math_util.h
         ${INCLUDE_DIR}/loader.h
         ${INCLUDE_DIR}/util.h)
 
@@ -64,6 +65,7 @@ include_directories(
         # extern/SDL2-2.0.4/include
         extern/glfw-3.1.2/include/GLFW/
         extern/glm-0.9.2.7
+        # extern/glm-0.9.8.1
         extern/freetype-2.6.3/include/
         extern/soil/src/)
 

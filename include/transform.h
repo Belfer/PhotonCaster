@@ -20,6 +20,7 @@ namespace graphics
         vec3 position;
         quat rotation;
         vec3 scale;
+        mat4 transform;
 
         inline mat4 model () const
         {

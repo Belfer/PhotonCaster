@@ -15,9 +15,27 @@ namespace graphics
 
     struct Light
     {
-        vec4 position;
-        vec4 color;
+        Light () : intensity (1), constant (1), linear (0), quadratic (0), type (DIRECTIONAL) {}
+
+        vec3 position;
+        vec3 color;
+        float intensity;
+        float constant;
+        float linear;
+        float quadratic;
         LightType type;
+
+        inline vec3 dir (const vec3& fragpos) const
+        {
+            switch (type) {
+            case DIRECTIONAL:
+                return glm::normalize (-position);
+                break;
+            case POINT:
+                return glm::normalize (fragpos-position);
+                break;
+            }
+        }
     };
 
 }

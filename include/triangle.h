@@ -2,6 +2,7 @@
 #define TRIANGLE_H
 
 #include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include "model.h"
 #include "transform.h"
 #include "material.h"
@@ -17,6 +18,10 @@ namespace graphics
 
     struct Triangle : public Model
     {
+        Triangle () {}
+        Triangle (vec3 p1, vec3 p2, vec3 p3)
+            : p1 (p1), p2 (p2), p3 (p3) {}
+
         vec3 p1;
         vec3 p2;
         vec3 p3;
@@ -28,9 +33,9 @@ namespace graphics
     public:
         virtual bool Update (const float& dt)
         {
-            tp1 = vec3 (transform.model () * vec4 (p1, 1.f));
-            tp2 = vec3 (transform.model () * vec4 (p2, 1.f));
-            tp3 = vec3 (transform.model () * vec4 (p3, 1.f));
+            tp1 = vec3 (transform.transform * vec4 (p1, 1.f));
+            tp2 = vec3 (transform.transform * vec4 (p2, 1.f));
+            tp3 = vec3 (transform.transform * vec4 (p3, 1.f));
         }
 
         virtual bool Intersect (Intersection& inter, const Ray& ray)
@@ -61,11 +66,23 @@ namespace graphics
 
             if (inter.distance == 0 || t < inter.distance) {
                 inter.distance = t;
+                inter.origin   = ray.origin;
                 inter.hitpoint = ray.origin + ray.direction*t;
+                inter.incident = ray.direction;
+                inter.ouid     = GetUID ();
                 inter.normal   = n;
                 inter.material = material;
+                return true;
             }
-            return true;
+            return false;
+        }
+
+        virtual inline void print ()
+        {
+            Model::print ();
+            cout << "p1: "<<glm::to_string (p1)<<"\n";
+            cout << "p1: "<<glm::to_string (p2)<<"\n";
+            cout << "p1: "<<glm::to_string (p3)<<"\n";
         }
 
         /* RTTI */

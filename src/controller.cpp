@@ -18,6 +18,8 @@ namespace util
     void FreeLook::Update (Camera& camera, const float& dt, const vec2& t, const vec2& r)
     {
         if (r.x != 0 || r.y != 0) {
+            //quat xrot = glm::angleAxis (glm::radians (r.y*sensitivity), RIGHT);
+            //quat yrot = glm::angleAxis (glm::radians (r.x*sensitivity), UP);
             quat xrot = glm::angleAxis (r.y*sensitivity, RIGHT);
             quat yrot = glm::angleAxis (r.x*sensitivity, UP);
             camera.orientation = yrot * xrot;

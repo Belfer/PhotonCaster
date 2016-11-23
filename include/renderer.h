@@ -10,12 +10,12 @@ namespace graphics
 
     enum RenderMode
     {
-        LIGHTING,
+        POSITION,
+        NORMALS,
         DIFFUSE,
         SPECULAR,
         EMISSION,
-        NORMALS,
-        POSITION
+        LIGHTING
     };
 
     class Renderer

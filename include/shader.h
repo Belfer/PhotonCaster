@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include <GL/glew.h>
+#include "util.h"
 
 namespace graphics
 {

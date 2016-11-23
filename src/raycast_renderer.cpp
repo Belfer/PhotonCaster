@@ -1,31 +1,22 @@
 #include "raycast_renderer.h"
-#include <iostream>
-#include <iomanip>
-#include "loader.h"
-#include "glm/gtx/string_cast.hpp"
-#include <SOIL.h>
-#include <math.h>
-#include <algorithm>
-#include <thread>
 
 using namespace std;
 
 namespace graphics
 {
 
-    void threaded_chunk_render (const Scene& scene, RenderMode mode, uint buffwidth, uint buffheight, uint* buffer, const uint& x, const uint& y, const uint& w, const uint& h);
+    void render_chunk (const Scene& scene, RenderMode mode, const uint& width, const uint& height, uint divisions, uint* buffer);
 
-    void RayTrace (const Scene& scene, RenderMode mode, const uint& width, const uint& height, uint* buffer);
+    void RayTrace (const Scene& scene, RenderMode mode, uint buffwidth, uint buffheight, uint* buffer, const uint& x, const uint& y, const uint& w, const uint& h);
 
     void RayThruPixel (Ray& ray, const Camera& camera, const uint& x, const uint& y, const uint& w, const uint& h);
 
-    bool Intersect (Intersection& inter, const Ray& ray, const Scene& scene);
+    bool Intersect (Intersection& inter, const Ray& ray, const Scene& scene, bool earlyout = false, size_t ignoreOUID = 0);
 
-    uint FindColor (const Intersection& inter, const Scene& scene, RenderMode mode);
+    vec3 FindColor (const Intersection& inter, const Scene& scene, RenderMode mode, uint depth);
 
-    vec4 ComputeLight (const vec4& diffuse_color, const vec4& specular_color, const float& shininess,
-                              const vec3& direction, const vec4& lightcolor,
-                              const vec3& normal, const vec3& halfvec);
+    void ComputeLight (vec3& diffuse, vec3& specular, const Material& material, const Light& light,
+                       const vec3& viewdir, const Intersection& inter);
 
     void RaycastRenderer::Setup ()
     {
@@ -76,7 +67,25 @@ namespace graphics
         const uint height = GetWindow ().GetHeight ();
 
         uint image[width][height];
-        RayTrace (scene, mode, width, height, (uint*)image);
+        uint num_threads = 2;
+        uint num_threadsSq = num_threads*num_threads;
+        thread* p_threads[num_threadsSq];
+
+        uint cw = width / num_threads;
+        uint ch = height / num_threads;
+        for (int i=0; i<num_threads; ++i) {
+            for (int j=0; j<num_threads; ++j) {
+                p_threads[i*num_threads+j] = new thread (RayTrace, scene, mode, width, height, (uint*)image, j*cw, i*ch, cw, ch);
+            }
+        }
+
+        for (int i=0; i<num_threadsSq; ++i) {
+            p_threads[i]->join ();
+        }
+
+        for (int i=0; i<num_threadsSq; ++i) {
+            delete p_threads[i];
+        }
 
         texture.Bind (0);
         unsigned char* p_image = reinterpret_cast<unsigned char*> ((uint*)image);
@@ -86,37 +95,32 @@ namespace graphics
         screen.Draw ();
     }
 
-    void threaded_chunk_render (const Scene& scene, RenderMode mode, uint buffwidth, uint buffheight, uint* buffer, const uint& x, const uint& y, const uint& w, const uint& h)
+    void RayTrace (const Scene& scene, RenderMode mode, uint buffwidth, uint buffheight, uint* buffer, const uint& x, const uint& y, const uint& w, const uint& h)
     {
         for (uint i=y; i<y+h; ++i) {
             for (uint j=x; j<x+w; ++j) {
                 uint* p_col = buffer + i*buffwidth + j;
+                vec3 fragColor;
 
                 Ray ray;
                 Intersection hit;
 
                 RayThruPixel (ray, *scene.p_active_camera, j, i, buffwidth, buffheight);
                 if (Intersect (hit, ray, scene)) {
-                    *p_col = FindColor (hit, scene, mode);
+                    fragColor = FindColor (hit, scene, mode, 0);
                 } else {
-                    *p_col = 0xFF000000;
+                    fragColor = scene.bgcolor;
                 }
+
+                uint color;
+                unsigned char* tmp = reinterpret_cast<unsigned char*> (&color);
+                tmp[0] = (unsigned char)(fragColor.x * 0xFF);
+                tmp[1] = (unsigned char)(fragColor.y * 0xFF);
+                tmp[2] = (unsigned char)(fragColor.z * 0xFF);
+                tmp[3] = (unsigned char)(0xFF);
+                *p_col = color;
             }
         }
-    }
-
-    void RayTrace (const Scene& scene, RenderMode mode, const uint& width, const uint& height, uint* buffer)
-    {
-        uint hw = width * 0.5f;
-        uint hh = height * 0.5f;
-        std::thread t1 (threaded_chunk_render, scene, mode, width, height, buffer, 0, 0, hw, hh);
-        std::thread t2 (threaded_chunk_render, scene, mode, width, height, buffer, hw, 0, hw, hh);
-        std::thread t3 (threaded_chunk_render, scene, mode, width, height, buffer, 0, hh, hw, hh);
-        std::thread t4 (threaded_chunk_render, scene, mode, width, height, buffer, hw, hh, hw, hh);
-        t1.join ();
-        t2.join ();
-        t3.join ();
-        t4.join ();
     }
 
     void RayThruPixel (Ray& ray, const Camera& camera, const uint& x, const uint& y, const uint& w, const uint& h)
@@ -128,136 +132,95 @@ namespace graphics
         i = glm::cross(k,j);
         j = glm::cross(i,k);
 
-        const float fovy = camera.fovy ();
-        const float fovx = fovy * (camera.aspect ()-0.0026f);
-
-        const float half_width = w*0.5f;
-        const float half_height = h*0.5f;
+        const float iw = 1.f / w;
+        const float ih = 1.f / h;
+        const float fov = camera.fov ();
+        const float aspect = camera.aspect ();
+        const float angle = glm::tan (PI * 0.5f * fov / 180);
         float a=0, b=0;
-        a = tan (fovx*0.5f) * ((x - half_width) / half_width);
-        b = tan (fovy*0.5f) * ((half_height - y) / half_height);
+
+        a = -(      2.f * ((x+0.5f) * iw) - 1.f) * angle * aspect;
+        b =  (1.f - 2.f * ((y+0.5f) * ih)      ) * angle;
 
         ray.origin = camera.position;
         ray.direction = -glm::normalize (a*i + b*j - k);
     }
 
-    bool Intersect (Intersection& inter, const Ray& ray, const Scene& scene)
+    bool Intersect (Intersection& inter, const Ray& ray, const Scene& scene, bool earlyout, size_t ignoreOUID)
     {
+        bool intersected = false;
         for (auto model : scene.models) {
-            model->Intersect (inter, ray);
+            if (model->GetUID () == ignoreOUID) continue;
+            if (model->Intersect (inter, ray)) {
+                intersected = true;
+                if (earlyout) break;
+            }
         }
 
-        if (inter.distance != 0) {
-            return true;
-        }
-        return false;
+        return intersected;
     }
 
-    uint FindColor (const Intersection& inter, const Scene& scene, RenderMode mode)
+    vec3 FindColor (const Intersection& inter, const Scene& scene, RenderMode mode, uint depth)
     {
-        uint color;
-        unsigned char* p_col = reinterpret_cast<unsigned char*> (&color);
-
+        if (depth > 5) return vec3 ();
         vec3 fragColor;
 
-        vec3 viewDir = glm::normalize (inter.hitpoint - scene.p_active_camera->position);
-        vec3 normal = inter.normal;
-
-        vec3 diffuseColor = vec3 (inter.material.diffuse_color);
-        vec3 specularColor = vec3 (inter.material.specular_color);
-
-        vec3 ambient = vec3 (scene.ambient_color);
+        vec3 ambient = inter.material.ambient;
+        vec3 emission = inter.material.emission;
         vec3 diffuse = vec3 ();
         vec3 specular = vec3 ();
 
-        for (int i=0; i<scene.num_lights; ++i)
-        {
-            vec3 lightColor = vec3 (scene.lights[i].color);
+        vec3 reflColor = vec3 ();
+        vec3 refrColor = vec3 ();
 
-            vec3 lightPos = vec3 (scene.lights[i].position);
-            vec3 lightDir;
+        const vec3 viewdir = glm::normalize (inter.hitpoint - inter.origin);
+        for (int i=0; i<scene.num_lights; ++i) {
 
-            bool shadowed = false;
             Ray shadowRay; Intersection shadowInter;
-
-            switch (scene.lights[i].type) {
-            case DIRECTIONAL:
-                lightDir = glm::normalize (lightPos);
-                shadowRay.direction = lightDir;
-                break;
-            case POINT:
-                lightDir = glm::normalize (lightPos - inter.hitpoint);
-                shadowRay.direction = -glm::normalize (inter.hitpoint - lightPos);
-                break;
+            if (scene.lights[i].type == POINT) {
+                shadowInter.distance = glm::length (scene.lights[i].position - inter.hitpoint);
             }
 
+            shadowRay.direction = -scene.lights[i].dir (inter.hitpoint);
             shadowRay.origin = inter.hitpoint + shadowRay.direction * EPSILON;
 
-            for (auto model : scene.models) {
-                if (model->Intersect (shadowInter, shadowRay)) {
-                    shadowed = true;
-                    break;
-                }
+            if (!Intersect (shadowInter, shadowRay, scene, true, 0)) {
+                ComputeLight (diffuse, specular, inter.material, scene.lights[i], viewdir, inter);
             }
+        }
 
-            // Ambient
-            const float ambientStrength = 0.1f;
-            ambient += lightColor * ambientStrength;
-
-            if (!shadowed) {
-                // Diffuse
-                float diff = glm::max (glm::dot (lightDir, normal), 0.f);
-                diffuse += diffuseColor * diff * lightColor;
-
-                // Specular
-                const float specularStrength = 1.0f;//0.5f;
-                vec3 reflectDir = glm::reflect (lightDir, normal);
-                float spec = glm::pow (glm::max (glm::dot (viewDir, reflectDir), 0.f), inter.material.shininess);
-                specular += specularColor * spec * (lightColor * specularStrength);
+        if (inter.material.shininess >= 1) {
+            Ray reflRay; Intersection reflInter;
+            reflRay.direction = util::reflect (inter.incident, inter.normal);
+            reflRay.origin = inter.hitpoint + reflRay.direction * EPSILON;
+            if (Intersect (reflInter, reflRay, scene)) {
+                reflColor = inter.material.specular * FindColor (reflInter, scene, mode, depth++);
             }
         }
 
         switch (mode) {
         case LIGHTING:
-            fragColor = ambient + diffuse + specular;
-            break;
-
-        case DIFFUSE:
-            fragColor = diffuse;
-            break;
-
-        case SPECULAR:
-            fragColor = specular;
-            break;
-
-        case NORMALS:
-            vec3 normal2 = inter.normal;
-            normal2 += 1; normal2 *= 0.5f;
-            fragColor = normal2;
+            fragColor = ambient + emission + diffuse + specular + reflColor;
             break;
         }
 
-        fragColor = glm::clamp (fragColor, vec3 (), vec3 (1,1,1));
-        p_col[0] = (unsigned char)(fragColor.x * 0xFF);
-        p_col[1] = (unsigned char)(fragColor.y * 0xFF);
-        p_col[2] = (unsigned char)(fragColor.z * 0xFF);
-        p_col[3] = (unsigned char)(0xFF);
-
-        return color;
+        return glm::clamp (fragColor, vec3 (), vec3 (1,1,1));
     }
 
-    vec4 ComputeLight (const vec4& diffuse_color, const vec4& specular_color, const float& shininess,
-                              const vec3& direction, const vec4& lightcolor,
-                              const vec3& normal, const vec3& halfvec)
+    void ComputeLight (vec3& diffuse, vec3& specular, const Material& material, const Light& light,
+                       const vec3& viewdir, const Intersection& inter)
     {
-        float nDotL = glm::dot (normal, direction);
-        vec4 lambert = diffuse_color * lightcolor * glm::max (nDotL, 0.f);
+        const vec3 lightdir = light.dir (inter.hitpoint);
+        const vec3 halfvec = glm::normalize (viewdir + lightdir);
+        const float dist = glm::length (light.position - inter.hitpoint);
+        const float att = light.constant + light.linear * dist + light.quadratic * dist*dist;
+        const float lum = 1.f / att * light.intensity;
 
-        float nDotH = glm::dot (normal, halfvec);
-        vec4 phong = specular_color * lightcolor * glm::pow (glm::max (nDotH, 0.f), shininess);
+        float nDotL = glm::dot (inter.normal, -lightdir);
+        diffuse += lum * material.diffuse * light.color * glm::max (nDotL, 0.f);
 
-        vec4 retval = lambert + phong;
-        return retval;
+        float nDotH = glm::dot (inter.normal, -halfvec);
+        specular += lum * material.specular * light.color * glm::pow (glm::max (nDotH, 0.f), material.shininess);
     }
 
 }

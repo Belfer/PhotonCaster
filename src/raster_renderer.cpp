@@ -23,7 +23,7 @@ namespace graphics
         Light lights[scene.num_lights];
         for (uint n=0; n<scene.num_lights; ++n) {
             lights[n] = scene.lights[n];
-            lights[n].position = camera->view () * lights[n].position;
+            lights[n].position = vec3 (camera->view () * vec4 (lights[n].position, 1.f));
         }
 
         for (uint i=0; i<scene.models.size (); ++i) {
@@ -31,7 +31,7 @@ namespace graphics
             Model* model = scene.models[i];
             //std::cout << model->GetType () << "\n";
 
-            glm::mat4 modelview = camera->view () * model->transform.model ();
+            glm::mat4 modelview = camera->view () * model->transform.transform;
             glm::mat4 modelviewinvtrans = modelview;
             ToInverseTranspose (modelviewinvtrans);
 
@@ -51,10 +51,10 @@ namespace graphics
             glUniformMatrix4fv (u_ProjectionMatrix, 1, GL_FALSE, glm::value_ptr (projection));
             glUniformMatrix4fv (u_ModelViewMatrix, 1, GL_FALSE, glm::value_ptr (modelview));
             glUniformMatrix4fv (u_ModelViewMatrixInverseTranspose, 1, GL_FALSE, glm::value_ptr (modelviewinvtrans));
-            glUniform4fv (u_ambient_color, 1, glm::value_ptr (scene.ambient_color));
-            glUniform4fv (u_diffuse_color, 1, glm::value_ptr (model->material.diffuse_color));
-            glUniform4fv (u_specular_color, 1, glm::value_ptr (model->material.specular_color));
-            glUniform4fv (u_emission_color, 1, glm::value_ptr (model->material.emission_color));
+            glUniform4fv (u_ambient_color, 1, glm::value_ptr (scene.ambient));
+            glUniform4fv (u_diffuse_color, 1, glm::value_ptr (model->material.diffuse));
+            glUniform4fv (u_specular_color, 1, glm::value_ptr (model->material.specular));
+            glUniform4fv (u_emission_color, 1, glm::value_ptr (model->material.emission));
             glUniform1f (u_shininess, model->material.shininess);
 
             glUniform1i (u_enablelighting, true);

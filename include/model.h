@@ -24,6 +24,16 @@ namespace graphics
         virtual bool Update (const float& dt) = 0;
         virtual bool Intersect (Intersection& inter, const Ray& ray) = 0;
 
+        virtual inline void print ()
+        {
+            cout << "type: "<<GetType ()<<"\n";
+            cout << "position: "<<glm::to_string (transform.position)<<"\n";
+            std::cout << "rotation: fquat(" << transform.rotation.w << ", " << transform.rotation.x << ", "
+                      << transform.rotation.y << ", " << transform.rotation.z << ")\n";
+            cout << "scale: "<<glm::to_string (transform.scale)<<"\n";
+            material.print ();
+        }
+
         /* RTTI */
         virtual const char* GetType () = 0;
         virtual const char* GetParentType (const ushort& i) = 0;
